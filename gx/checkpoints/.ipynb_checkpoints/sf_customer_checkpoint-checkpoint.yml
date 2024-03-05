@@ -1,0 +1,63 @@
+name: sf_customer_checkpoint
+config_version: 1.0
+template_name:
+module_name: great_expectations.checkpoint
+class_name: Checkpoint
+run_name_template:
+expectation_suite_name:
+batch_request: {}
+action_list:
+  - name: store_validation_result
+    action:
+      class_name: StoreValidationResultAction
+  - name: store_evaluation_params
+    action:
+      class_name: StoreEvaluationParametersAction
+  - name: update_data_docs
+    action:
+      class_name: UpdateDataDocsAction
+  - name: send_email_on_validation_result # name can be set to any value
+    action:
+      class_name: EmailAction
+      notify_on: all # possible values: "all", "failure", "success"
+      notify_with: # optional list containing the DataDocs sites to include in the notification. Defaults to including links to all configured sites.
+      # You can choose between using SSL encryption, TLS encryption or none of them (not advised)
+      use_tls: True
+      use_ssl: False
+      renderer:
+        module_name: great_expectations.render.renderer.email_renderer
+        class_name: EmailRenderer
+      # put the actual following information in the uncommitted/config_variables.yml file
+      # or pass in as environment variable
+      smtp_address: ${smtp_address}
+      smtp_port: ${smtp_port}
+      sender_login: ${sender_login}
+      sender_password: ${sender_password}
+      receiver_emails: ${receiver_emails}  # string containing email addresses separated by commas
+  - name: store_metrics
+    action:
+      class_name: StoreMetricsAction
+      target_store_name: metrics_store  # This should match the name of the store configured above
+      requested_metrics:
+        sf_suite:  # match a particular expectation suite
+          - column:
+              c_custkey:
+                - expect_column_values_to_not_be_null.result.element_count
+                - expect_column_values_to_not_be_null.result.partial_unexpected_list
+          - statistics.successful_expectations
+        # "*":  # wildcard to match any expectation suite
+        #   - statistics.evaluated_expectations
+        #   - statistics.success_percent
+        #   - statistics.unsuccessful_expectations
+evaluation_parameters: {}
+runtime_configuration: {}
+validations:
+  - batch_request:
+      datasource_name: SF_DATASOURCE
+      data_asset_name: customer_asset
+      options: {}
+      batch_slice:
+    expectation_suite_name: sf_suite
+profilers: []
+ge_cloud_id:
+expectation_suite_ge_cloud_id:

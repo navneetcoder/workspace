@@ -1,0 +1,88 @@
+config_version: 3.0
+datasources: {}
+config_variables_file_path: uncommitted/config_variables.yml
+plugins_directory: plugins/
+stores:
+  expectations_store:
+    class_name: ExpectationsStore
+    store_backend:
+      class_name: TupleAzureBlobStoreBackend
+      container: expectationsstore
+      prefix: expectations
+      connection_string: ${AZURE_STORAGE_CONNECTION_STRING}
+  validations_store:
+    class_name: ValidationsStore
+    store_backend:
+      class_name: TupleAzureBlobStoreBackend
+      container: validationsstore
+      prefix: validations
+      connection_string: ${AZURE_STORAGE_CONNECTION_STRING}
+  metrics_store:
+    class_name: MetricStore
+    store_backend:
+      class_name: DatabaseStoreBackend
+      credentials: ${pd_db_creds}
+  evaluation_parameter_store:
+    class_name: EvaluationParameterStore
+  checkpoint_store:
+    class_name: CheckpointStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      suppress_store_backend_id: true
+      base_directory: checkpoints/
+  profiler_store:
+    class_name: ProfilerStore
+    store_backend:
+      class_name: TupleFilesystemStoreBackend
+      suppress_store_backend_id: true
+      base_directory: profilers/
+expectations_store_name: expectations_store
+validations_store_name: validations_store
+evaluation_parameter_store_name: evaluation_parameter_store
+checkpoint_store_name: checkpoint_store
+data_docs_sites:
+  test_data_docs:
+    class_name: SiteBuilder
+    show_how_to_buttons: true
+    store_backend:
+      class_name: TupleAzureBlobStoreBackend
+      container: \$web
+      connection_string: ${AZURE_STORAGE_CONNECTION_STRING}
+    site_index_builder:
+      class_name: DefaultSiteIndexBuilder
+anonymous_usage_statistics:
+  data_context_id: 00000000-0000-0000-0000-00000000e003
+  enabled: true
+notebooks:
+include_rendered_content:
+  globally: false
+  expectation_suite: false
+  expectation_validation_result: false
+fluent_datasources:
+  sf_datasource:
+    type: snowflake
+    assets:
+      customer_asset:
+        type: query
+        order_by: []
+        batch_metadata: {}
+        query: select * from customer
+      orders_asset:
+        type: table
+        order_by: []
+        batch_metadata: {}
+        splitter:
+          column_name: o_orderdate
+          method_name: split_on_year_and_month
+        table_name: orders
+        schema_name:
+      region_asset:
+        type: table
+        order_by: []
+        batch_metadata: {}
+        splitter:
+          column_name: r_regionkey
+          method_name: split_on_column_value
+        table_name: region
+        schema_name:
+    connection_string: snowflake://${username}:${password}@${account}/${database}/${schema}?warehouse=${warehouse}&role=${role}
